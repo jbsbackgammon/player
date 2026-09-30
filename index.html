@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>JBS 顔写真作成</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f5f7;
+      --panel: #ffffff;
+      --text: #17191d;
+      --muted: #6c727f;
+      --line: #d8dce3;
+      --soft: #eef0f4;
+      --accent: #d71161;
+      --danger: #b42318;
+      --shadow: 0 12px 36px rgba(22, 28, 45, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; min-height: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button, input { font: inherit; }
+
+    .app {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 44px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.15;
+      letter-spacing: .02em;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(360px, 1fr) 360px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .preview-panel { padding: 20px; }
+    .control-panel { padding: 20px; position: sticky; top: 16px; }
+
+    .preview-wrap {
+      width: min(100%, 640px);
+      margin: 0 auto;
+    }
+
+    .canvas-shell {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border: 1px solid #bfc5cf;
+      background:
+        linear-gradient(45deg, #f0f1f3 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f1f3 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f1f3 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f1f3 75%),
+        #fff;
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .canvas-shell.dragging { cursor: grabbing; }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      text-align: center;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--text);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .guide {
+      position: absolute;
+      left: 25%;
+      top: 12.5%;
+      width: 50%;
+      height: 62.5%;
+      border: 2px dashed rgba(215, 17, 97, .9);
+      border-radius: 999px 999px 42% 42%;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, .08);
+      pointer-events: none;
+    }
+
+    .guide::after {
+      content: "顔位置の目安";
+      position: absolute;
+      left: 50%;
+      bottom: -31px;
+      transform: translateX(-50%);
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      color: var(--accent);
+      font-size: 11px;
+      line-height: 1;
+      white-space: nowrap;
+      border: 1px solid rgba(215, 17, 97, .22);
+    }
+
+    .preview-note {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .section + .section {
+      border-top: 1px solid var(--line);
+      margin-top: 20px;
+      padding-top: 20px;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .field { margin-top: 12px; }
+    .field:first-of-type { margin-top: 0; }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="range"]:focus-visible,
+    button:focus-visible {
+      outline: 3px solid rgba(215, 17, 97, .18);
+      outline-offset: 2px;
+    }
+
+    .file-input {
+      width: 100%;
+      padding: 13px;
+      border: 1px dashed #b9bfca;
+      border-radius: 12px;
+      background: #fafbfc;
+    }
+
+    .filename {
+      margin-top: 10px;
+      padding: 10px 12px;
+      min-height: 42px;
+      border-radius: 10px;
+      background: var(--soft);
+      color: #4b515c;
+      font-size: 12px;
+      line-height: 1.45;
+      word-break: break-all;
+    }
+
+    .zoom-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="range"] { width: 100%; }
+
+    .zoom-value {
+      min-width: 56px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .pad {
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-template-rows: repeat(3, 42px);
+      justify-content: center;
+      gap: 7px;
+      margin: 14px 0 4px;
+    }
+
+    .pad button:nth-child(1) { grid-column: 2; grid-row: 1; }
+    .pad button:nth-child(2) { grid-column: 1; grid-row: 2; }
+    .pad button:nth-child(3) { grid-column: 2; grid-row: 2; }
+    .pad button:nth-child(4) { grid-column: 3; grid-row: 2; }
+    .pad button:nth-child(5) { grid-column: 2; grid-row: 3; }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform .06s ease, opacity .15s ease, background .15s ease;
+    }
+
+    button:active { transform: translateY(1px); }
+    button:disabled { cursor: not-allowed; opacity: .45; }
+
+    .btn-subtle {
+      background: var(--soft);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .btn-line {
+      width: 100%;
+      min-height: 42px;
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 16px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+
+    .helper {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .status {
+      margin-top: 10px;
+      min-height: 19px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .status.error { color: var(--danger); }
+
+    @media (max-width: 820px) {
+      .app { width: min(100% - 20px, 680px); padding-top: 18px; }
+      .header { align-items: flex-start; }
+      .workspace { grid-template-columns: 1fr; }
+      .control-panel { position: static; }
+      .preview-panel, .control-panel { padding: 14px; border-radius: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div>
+        <h1>顔写真作成</h1>
+        <p class="subtitle">写真を512×512pxのPNGに整形します。赤いガイド内を顔位置の目安として調整してください。</p>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <section class="panel preview-panel" aria-label="画像プレビュー">
+        <div class="preview-wrap">
+          <div class="canvas-shell" id="canvasShell">
+            <canvas id="preview" width="512" height="512"></canvas>
+            <div class="empty-state" id="emptyState">
+              <div>
+                <strong>写真を選択してください</strong>
+                画像を読み込むと、ここで位置と大きさを調整できます。
+              </div>
+            </div>
+            <div class="guide" id="guide"></div>
+          </div>
+          <p class="preview-note">ドラッグで位置調整できます。マウスホイール／ピンチ操作でも拡大縮小できます。</p>
+        </div>
+      </section>
+
+      <aside class="panel control-panel">
+        <section class="section">
+          <h2 class="section-title">1. 写真</h2>
+          <input class="file-input" id="fileInput" type="file" accept="image/*">
+          <p class="helper">JPEG・PNGなど一般的な画像を使用できます。画像データはブラウザ内で処理され、外部へ送信しません。</p>
+          <div class="status" id="status" aria-live="polite"></div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">2. 位置・大きさ</h2>
+          <div class="field">
+            <label for="zoom">拡大縮小</label>
+            <div class="zoom-row">
+              <input id="zoom" type="range" min="50" max="300" value="100" step="1" disabled>
+              <span class="zoom-value" id="zoomValue">100%</span>
+            </div>
+          </div>
+
+          <div class="pad" aria-label="画像位置調整">
+            <button class="btn-subtle" id="moveUp" type="button" aria-label="上へ">↑</button>
+            <button class="btn-subtle" id="moveLeft" type="button" aria-label="左へ">←</button>
+            <button class="btn-subtle" id="resetPosition" type="button" aria-label="初期位置に戻す">●</button>
+            <button class="btn-subtle" id="moveRight" type="button" aria-label="右へ">→</button>
+            <button class="btn-subtle" id="moveDown" type="button" aria-label="下へ">↓</button>
+          </div>
+
+          <button class="btn-line" id="autoPosition" type="button" disabled>顔を自動配置</button>
+          <button class="btn-line" id="resetAll" type="button" disabled>位置・大きさを初期化</button>
+          <p class="helper">「顔を自動配置」は対応ブラウザのみ利用できます。非対応時は中央配置から手動で調整できます。</p>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">3. ファイル名</h2>
+          <div class="field">
+            <label for="nameJa">日本語名</label>
+            <input id="nameJa" type="text" placeholder="柳 暢祐" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="nameEn">英語名</label>
+            <input id="nameEn" type="text" placeholder="YANAGI Nobusuke" autocomplete="off">
+          </div>
+          <div class="filename" id="filenamePreview">未入力.png</div>
+          <button class="btn-primary" id="download" type="button" disabled>512×512 PNGを書き出す</button>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const SIZE = 512;
+      const MOVE_STEP = 12;
+      const TARGET = { x: SIZE / 4, y: SIZE / 8, w: SIZE / 2, h: SIZE * 5 / 8 };
+
+      const preview = document.getElementById('preview');
+      const ctx = preview.getContext('2d', { alpha: true });
+      const canvasShell = document.getElementById('canvasShell');
+      const emptyState = document.getElementById('emptyState');
+      const fileInput = document.getElementById('fileInput');
+      const zoom = document.getElementById('zoom');
+      const zoomValue = document.getElementById('zoomValue');
+      const autoPosition = document.getElementById('autoPosition');
+      const resetAll = document.getElementById('resetAll');
+      const resetPosition = document.getElementById('resetPosition');
+      const moveUp = document.getElementById('moveUp');
+      const moveDown = document.getElementById('moveDown');
+      const moveLeft = document.getElementById('moveLeft');
+      const moveRight = document.getElementById('moveRight');
+      const nameJa = document.getElementById('nameJa');
+      const nameEn = document.getElementById('nameEn');
+      const filenamePreview = document.getElementById('filenamePreview');
+      const download = document.getElementById('download');
+      const status = document.getElementById('status');
+
+      let image = null;
+      let imageUrl = null;
+      let baseScale = 1;
+      let zoomFactor = 1;
+      let offsetX = 0;
+      let offsetY = 0;
+      let defaultState = null;
+      let activePointer = null;
+      let dragStart = null;
+      let pinchStart = null;
+      const pointers = new Map();
+
+      const hasFaceDetector = 'FaceDetector' in window;
+
+      function setStatus(message, isError = false) {
+        status.textContent = message;
+        status.classList.toggle('error', isError);
+      }
+
+      function sanitizePart(value) {
+        return value
+          .trim()
+          .replace(/[\\/:*?"<>|]/g, '')
+          .replace(/\s+/g, ' ');
+      }
+
+      function buildFilename() {
+        const ja = sanitizePart(nameJa.value);
+        const en = sanitizePart(nameEn.value);
+        const base = [ja, en].filter(Boolean).join('_') || '未入力';
+        const filename = `${base}.png`;
+        filenamePreview.textContent = filename;
+        return filename;
+      }
+
+      function getDrawState() {
+        if (!image) return null;
+        const scale = baseScale * zoomFactor;
+        const w = image.naturalWidth * scale;
+        const h = image.naturalHeight * scale;
+        const x = (SIZE - w) / 2 + offsetX;
+        const y = (SIZE - h) / 2 + offsetY;
+        return { scale, w, h, x, y };
+      }
+
+      function getMinimumZoom() {
+        if (!image) return .5;
+        const coverScale = Math.max(SIZE / image.naturalWidth, SIZE / image.naturalHeight);
+        return Math.max(.01, coverScale / baseScale);
+      }
+
+      function clampOffsets() {
+        if (!image) return;
+        const scale = baseScale * zoomFactor;
+        const w = image.naturalWidth * scale;
+        const h = image.naturalHeight * scale;
+
+        if (w <= SIZE) {
+          offsetX = 0;
+        } else {
+          const limitX = (w - SIZE) / 2;
+          offsetX = Math.max(-limitX, Math.min(limitX, offsetX));
+        }
+
+        if (h <= SIZE) {
+          offsetY = 0;
+        } else {
+          const limitY = (h - SIZE) / 2;
+          offsetY = Math.max(-limitY, Math.min(limitY, offsetY));
+        }
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, SIZE, SIZE);
+        if (!image) return;
+        clampOffsets();
+        const s = getDrawState();
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(image, s.x, s.y, s.w, s.h);
+      }
+
+      function updateZoomUI() {
+        const minPct = Math.max(1, Math.ceil(getMinimumZoom() * 100));
+        zoom.min = String(minPct);
+        const pct = Math.round(zoomFactor * 100);
+        zoom.value = Math.max(minPct, Math.min(Number(zoom.max), pct));
+        zoomValue.textContent = `${pct}%`;
+      }
+
+      function storeDefault() {
+        defaultState = { baseScale, zoomFactor, offsetX, offsetY };
+      }
+
+      function restoreDefault() {
+        if (!defaultState) return;
+        baseScale = defaultState.baseScale;
+        zoomFactor = defaultState.zoomFactor;
+        offsetX = defaultState.offsetX;
+        offsetY = defaultState.offsetY;
+        updateZoomUI();
+        render();
+      }
+
+      function setControlsEnabled(enabled) {
+        [zoom, resetAll, resetPosition, moveUp, moveDown, moveLeft, moveRight, download].forEach(el => el.disabled = !enabled);
+        autoPosition.disabled = !enabled || !hasFaceDetector;
+      }
+
+      function setInitialCover() {
+        const coverScale = Math.max(SIZE / image.naturalWidth, SIZE / image.naturalHeight);
+        baseScale = coverScale;
+        zoomFactor = 1;
+        offsetX = 0;
+        offsetY = 0;
+        updateZoomUI();
+        storeDefault();
+        render();
+      }
+
+      async function tryAutoPosition({ silent = false, updateDefault = false } = {}) {
+        if (!image || !hasFaceDetector) {
+          if (!silent) setStatus('このブラウザでは顔の自動配置を利用できません。手動で調整してください。');
+          return false;
+        }
+
+        try {
+          setStatus('顔を検出しています…');
+          const detector = new FaceDetector({ fastMode: true, maxDetectedFaces: 8 });
+          const faces = await detector.detect(image);
+          if (!faces.length) {
+            if (!silent) setStatus('顔を検出できませんでした。手動で調整してください。');
+            else setStatus('写真を読み込みました。位置と大きさを調整してください。');
+            return false;
+          }
+
+          const face = faces.reduce((best, current) => {
+            const a = current.boundingBox.width * current.boundingBox.height;
+            const b = best.boundingBox.width * best.boundingBox.height;
+            return a > b ? current : best;
+          });
+
+          const b = face.boundingBox;
+          const fitScale = Math.min((TARGET.w * 0.82) / b.width, (TARGET.h * 0.82) / b.height);
+          const coverScale = Math.max(SIZE / image.naturalWidth, SIZE / image.naturalHeight);
+          baseScale = Math.max(fitScale, coverScale);
+          zoomFactor = 1;
+
+          const faceCenterX = (b.x + b.width / 2) * fitScale;
+          const faceCenterY = (b.y + b.height / 2) * fitScale;
+          const scaledW = image.naturalWidth * fitScale;
+          const scaledH = image.naturalHeight * fitScale;
+          const imageOriginX = (SIZE - scaledW) / 2;
+          const imageOriginY = (SIZE - scaledH) / 2;
+          const targetCenterX = TARGET.x + TARGET.w / 2;
+          const targetCenterY = TARGET.y + TARGET.h / 2;
+
+          offsetX = targetCenterX - (imageOriginX + faceCenterX);
+          offsetY = targetCenterY - (imageOriginY + faceCenterY);
+
+          updateZoomUI();
+          render();
+          if (updateDefault) storeDefault();
+          setStatus('顔を自動配置しました。必要に応じて微調整してください。');
+          return true;
+        } catch (error) {
+          console.error(error);
+          if (!silent) setStatus('顔の自動配置に失敗しました。手動で調整してください。', true);
+          else setStatus('写真を読み込みました。位置と大きさを調整してください。');
+          return false;
+        }
+      }
+
+      function move(dx, dy) {
+        if (!image) return;
+        offsetX += dx;
+        offsetY += dy;
+        clampOffsets();
+        render();
+      }
+
+      function setZoom(next, anchor = null) {
+        if (!image) return;
+        const clamped = Math.max(getMinimumZoom(), Math.min(3, next));
+        if (Math.abs(clamped - zoomFactor) < 0.0001) return;
+
+        if (!anchor) {
+          zoomFactor = clamped;
+          updateZoomUI();
+          render();
+          return;
+        }
+
+        const before = getDrawState();
+        const imageX = (anchor.x - before.x) / before.scale;
+        const imageY = (anchor.y - before.y) / before.scale;
+        zoomFactor = clamped;
+        const after = getDrawState();
+        offsetX += anchor.x - (after.x + imageX * after.scale);
+        offsetY += anchor.y - (after.y + imageY * after.scale);
+        updateZoomUI();
+        render();
+      }
+
+      function canvasPointFromEvent(event) {
+        const rect = canvasShell.getBoundingClientRect();
+        return {
+          x: (event.clientX - rect.left) * (SIZE / rect.width),
+          y: (event.clientY - rect.top) * (SIZE / rect.height)
+        };
+      }
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          setStatus('画像ファイルを選択してください。', true);
+          return;
+        }
+
+        if (imageUrl) URL.revokeObjectURL(imageUrl);
+        imageUrl = URL.createObjectURL(file);
+        const nextImage = new Image();
+
+        nextImage.onload = async () => {
+          image = nextImage;
+          emptyState.hidden = true;
+          setControlsEnabled(true);
+          setInitialCover();
+
+          const autoPlaced = await tryAutoPosition({ silent: true, updateDefault: true });
+          if (!autoPlaced) storeDefault();
+        };
+
+        nextImage.onerror = () => {
+          setStatus('画像を読み込めませんでした。別の画像をお試しください。', true);
+          setControlsEnabled(false);
+        };
+
+        nextImage.src = imageUrl;
+      });
+
+      zoom.addEventListener('input', () => setZoom(Number(zoom.value) / 100));
+      autoPosition.addEventListener('click', () => tryAutoPosition({ updateDefault: false }));
+      resetAll.addEventListener('click', restoreDefault);
+      resetPosition.addEventListener('click', () => { offsetX = defaultState?.offsetX ?? 0; offsetY = defaultState?.offsetY ?? 0; render(); });
+      moveUp.addEventListener('click', () => move(0, -MOVE_STEP));
+      moveDown.addEventListener('click', () => move(0, MOVE_STEP));
+      moveLeft.addEventListener('click', () => move(-MOVE_STEP, 0));
+      moveRight.addEventListener('click', () => move(MOVE_STEP, 0));
+
+      [nameJa, nameEn].forEach(input => input.addEventListener('input', buildFilename));
+      buildFilename();
+
+      canvasShell.addEventListener('wheel', (event) => {
+        if (!image) return;
+        event.preventDefault();
+        const point = canvasPointFromEvent(event);
+        const factor = event.deltaY < 0 ? 1.06 : 1 / 1.06;
+        setZoom(zoomFactor * factor, point);
+      }, { passive: false });
+
+      canvasShell.addEventListener('pointerdown', (event) => {
+        if (!image) return;
+        canvasShell.setPointerCapture(event.pointerId);
+        pointers.set(event.pointerId, canvasPointFromEvent(event));
+        canvasShell.classList.add('dragging');
+
+        if (pointers.size === 1) {
+          activePointer = event.pointerId;
+          dragStart = { point: pointers.get(event.pointerId), offsetX, offsetY };
+        } else if (pointers.size === 2) {
+          const pts = [...pointers.values()];
+          const dx = pts[1].x - pts[0].x;
+          const dy = pts[1].y - pts[0].y;
+          pinchStart = {
+            distance: Math.hypot(dx, dy),
+            zoom: zoomFactor,
+            anchor: { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+          };
+        }
+      });
+
+      canvasShell.addEventListener('pointermove', (event) => {
+        if (!pointers.has(event.pointerId) || !image) return;
+        pointers.set(event.pointerId, canvasPointFromEvent(event));
+
+        if (pointers.size === 1 && event.pointerId === activePointer && dragStart) {
+          const p = pointers.get(event.pointerId);
+          offsetX = dragStart.offsetX + (p.x - dragStart.point.x);
+          offsetY = dragStart.offsetY + (p.y - dragStart.point.y);
+          clampOffsets();
+          render();
+        } else if (pointers.size >= 2 && pinchStart) {
+          const pts = [...pointers.values()].slice(0, 2);
+          const dx = pts[1].x - pts[0].x;
+          const dy = pts[1].y - pts[0].y;
+          const distance = Math.max(1, Math.hypot(dx, dy));
+          const anchor = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+          const nextZoom = pinchStart.zoom * (distance / pinchStart.distance);
+          setZoom(nextZoom, anchor);
+        }
+      });
+
+      function endPointer(event) {
+        pointers.delete(event.pointerId);
+        if (pointers.size === 0) {
+          activePointer = null;
+          dragStart = null;
+          pinchStart = null;
+          canvasShell.classList.remove('dragging');
+        } else if (pointers.size === 1) {
+          const [id, point] = [...pointers.entries()][0];
+          activePointer = id;
+          dragStart = { point, offsetX, offsetY };
+          pinchStart = null;
+        }
+      }
+
+      canvasShell.addEventListener('pointerup', endPointer);
+      canvasShell.addEventListener('pointercancel', endPointer);
+
+      download.addEventListener('click', () => {
+        if (!image) return;
+        render();
+        preview.toBlob((blob) => {
+          if (!blob) {
+            setStatus('PNGの生成に失敗しました。', true);
+            return;
+          }
+          const link = document.createElement('a');
+          const objectUrl = URL.createObjectURL(blob);
+          link.href = objectUrl;
+          link.download = buildFilename();
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+          setStatus('512×512pxのPNGを書き出しました。');
+        }, 'image/png');
+      });
+
+      setControlsEnabled(false);
+      if (!hasFaceDetector) {
+        autoPosition.title = 'このブラウザはFaceDetector APIに対応していません';
+      }
+    })();
+  </script>
+</body>
+</html>
