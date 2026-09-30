@@ -39,9 +39,9 @@
 
     .workspace {
       display: grid;
-      grid-template-columns: 360px minmax(360px, 1fr);
-      gap: 20px;
-      align-items: start;
+      grid-template-columns: 340px minmax(360px, 1fr);
+      gap: 16px;
+      align-items: stretch;
     }
 
     .panel {
@@ -51,18 +51,25 @@
       box-shadow: var(--shadow);
     }
 
-    .preview-panel { padding: 20px; }
-    .control-panel { padding: 20px; position: sticky; top: 16px; }
+    .preview-panel { padding: 12px 8px; }
+    .control-panel {
+      padding: 14px;
+      position: sticky;
+      top: 16px;
+      align-self: stretch;
+      height: 100%;
+    }
 
     .preview-wrap {
-      width: min(100%, 724px);
+      width: 100%;
+      max-width: 780px;
       margin: 0 auto;
     }
 
     .guide-stage {
       position: relative;
       width: 100%;
-      padding: 18px 128px 38px 18px;
+      padding: 12px 108px 32px 6px;
     }
 
     .canvas-box {
@@ -198,32 +205,32 @@
 
     .section + .section {
       border-top: 1px solid var(--line);
-      margin-top: 20px;
-      padding-top: 20px;
+      margin-top: 12px;
+      padding-top: 12px;
     }
 
     .section-title {
-      margin: 0 0 12px;
-      font-size: 15px;
+      margin: 0 0 8px;
+      font-size: 14px;
       font-weight: 700;
     }
 
-    .field { margin-top: 12px; }
+    .field { margin-top: 8px; }
     .field:first-of-type { margin-top: 0; }
 
     label {
       display: block;
-      margin-bottom: 7px;
-      font-size: 13px;
+      margin-bottom: 4px;
+      font-size: 12px;
       font-weight: 700;
     }
 
     input[type="text"] {
       width: 100%;
-      height: 44px;
-      padding: 0 12px;
+      height: 38px;
+      padding: 0 10px;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: 8px;
       background: #fff;
       color: var(--text);
       outline: none;
@@ -238,17 +245,18 @@
 
     .file-input {
       width: 100%;
-      padding: 13px;
+      padding: 8px;
       border: 1px dashed #b9bfca;
-      border-radius: 12px;
+      border-radius: 8px;
       background: #fafbfc;
+      font-size: 12px;
     }
 
     .filename {
-      margin-top: 10px;
-      padding: 10px 12px;
-      min-height: 42px;
-      border-radius: 10px;
+      margin-top: 6px;
+      padding: 7px 9px;
+      min-height: 34px;
+      border-radius: 8px;
       background: var(--soft);
       color: #4b515c;
       font-size: 12px;
@@ -259,14 +267,14 @@
     .zoom-row {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 10px;
+      gap: 6px;
       align-items: center;
     }
 
     input[type="range"] { width: 100%; }
 
     .zoom-value {
-      min-width: 56px;
+      min-width: 48px;
       text-align: right;
       font-variant-numeric: tabular-nums;
       font-size: 13px;
@@ -275,11 +283,11 @@
 
     .pad {
       display: grid;
-      grid-template-columns: repeat(3, 48px);
-      grid-template-rows: repeat(3, 42px);
+      grid-template-columns: repeat(3, 38px);
+      grid-template-rows: repeat(3, 30px);
       justify-content: center;
-      gap: 7px;
-      margin: 14px 0 4px;
+      gap: 4px;
+      margin: 6px 0 2px;
     }
 
     .pad button:nth-child(1) { grid-column: 2; grid-row: 1; }
@@ -290,7 +298,7 @@
 
     button {
       border: 0;
-      border-radius: 10px;
+      border-radius: 8px;
       cursor: pointer;
       transition: transform .06s ease, opacity .15s ease, background .15s ease;
     }
@@ -306,8 +314,8 @@
 
     .btn-line {
       width: 100%;
-      min-height: 42px;
-      margin-top: 10px;
+      min-height: 32px;
+      margin-top: 6px;
       border: 1px solid var(--line);
       background: #fff;
       color: var(--text);
@@ -316,16 +324,16 @@
 
     .btn-primary {
       width: 100%;
-      min-height: 50px;
-      margin-top: 16px;
+      min-height: 42px;
+      margin-top: 8px;
       background: var(--accent);
       color: #fff;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 800;
       letter-spacing: .02em;
     }
 
-    .adjust-section .field { margin-top: 8px; }
+    .adjust-section .field { margin-top: 4px; }
 
     .adjust-section label {
       margin-bottom: 4px;
@@ -333,10 +341,10 @@
     }
 
     .adjust-section .pad {
-      grid-template-columns: repeat(3, 42px);
-      grid-template-rows: repeat(3, 34px);
-      gap: 5px;
-      margin: 8px 0 2px;
+      grid-template-columns: repeat(3, 38px);
+      grid-template-rows: repeat(3, 30px);
+      gap: 4px;
+      margin: 5px 0 2px;
     }
 
     .adjust-section .btn-subtle {
@@ -347,14 +355,14 @@
     .adjust-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      margin-top: 7px;
+      gap: 5px;
+      margin-top: 5px;
     }
 
     .adjust-actions .btn-line {
-      min-height: 36px;
+      min-height: 32px;
       margin-top: 0;
-      padding: 5px 6px;
+      padding: 4px 5px;
       border-radius: 8px;
       font-size: 11px;
       line-height: 1.25;
@@ -368,21 +376,23 @@
     }
 
     .status {
-      margin-top: 10px;
-      min-height: 19px;
+      margin-top: 5px;
+      min-height: 0;
       color: var(--muted);
       font-size: 12px;
       line-height: 1.55;
     }
 
+    .status:empty { display: none; }
     .status.error { color: var(--danger); }
 
     @media (max-width: 820px) {
       .app { width: min(100% - 20px, 680px); padding-top: 18px; }
       .workspace { grid-template-columns: 1fr; }
-      .control-panel { position: static; }
-      .preview-panel, .control-panel { padding: 14px; border-radius: 14px; }
-      .guide-stage { padding: 12px 104px 34px 10px; }
+      .control-panel { position: static; height: auto; }
+      .preview-panel { padding: 10px 6px; border-radius: 14px; }
+      .control-panel { padding: 12px; border-radius: 14px; }
+      .guide-stage { padding: 10px 96px 30px 4px; }
       .guide-label { font-size: 9px; }
     }
   </style>
@@ -432,7 +442,7 @@
             <input id="nameEn" type="text" placeholder="YANAGI Nobusuke" autocomplete="off">
           </div>
           <div class="filename" id="filenamePreview">未入力.png</div>
-          <button class="btn-primary" id="download" type="button" disabled>512×512 PNGを書き出す</button>
+          <button class="btn-primary" id="download" type="button" disabled>512×512 PNG出力</button>
         </section>
       </aside>
 
