@@ -691,7 +691,7 @@
 
       function setZoom(next, anchor = null) {
         if (!image) return;
-        const clamped = Math.max(getMinimumZoom(), Math.min(3, next));
+        const clamped = Math.max(getMinimumZoom(), Math.min(10, next));
         if (Math.abs(clamped - zoomFactor) < 0.0001) return;
 
         if (!anchor) {
