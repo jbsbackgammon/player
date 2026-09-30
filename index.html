@@ -62,7 +62,13 @@
     .guide-stage {
       position: relative;
       width: 100%;
-      padding: 34px 42px 28px;
+      padding: 18px 128px 38px 18px;
+    }
+
+    .canvas-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
     }
 
     .guide-label {
@@ -75,33 +81,32 @@
       white-space: nowrap;
     }
 
-    .guide-label.top {
-      top: 3px;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-      white-space: normal;
-    }
-
-    .guide-label.bottom {
-      bottom: 5px;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-    }
-
-    .guide-label.left {
-      left: 3px;
-      top: 50%;
-      transform: translateY(-50%);
-      text-align: right;
-    }
-
-    .guide-label.right {
-      right: 3px;
-      top: 50%;
+    .guide-label.h1-right {
+      left: calc(100% + 7px);
+      top: 12.5%;
       transform: translateY(-50%);
       text-align: left;
+    }
+
+    .guide-label.h2-right {
+      left: calc(100% + 7px);
+      top: 75%;
+      transform: translateY(-50%);
+      text-align: left;
+    }
+
+    .guide-label.v1-bottom {
+      left: 25%;
+      top: calc(100% + 7px);
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    .guide-label.v2-bottom {
+      left: 75%;
+      top: calc(100% + 7px);
+      transform: translateX(-50%);
+      text-align: center;
     }
 
     .canvas-shell {
@@ -377,7 +382,7 @@
       .workspace { grid-template-columns: 1fr; }
       .control-panel { position: static; }
       .preview-panel, .control-panel { padding: 14px; border-radius: 14px; }
-      .guide-stage { padding: 32px 34px 26px; }
+      .guide-stage { padding: 12px 104px 34px 10px; }
       .guide-label { font-size: 9px; }
     }
   </style>
@@ -434,23 +439,25 @@
       <section class="panel preview-panel" aria-label="画像プレビュー">
         <div class="preview-wrap">
           <div class="guide-stage">
-            <div class="guide-label top">頭髪を考慮しない<br>想定される頭頂部</div>
-            <div class="guide-label bottom">顎</div>
-            <div class="guide-label left">耳付近</div>
-            <div class="guide-label right">耳付近</div>
-            <div class="canvas-shell" id="canvasShell">
-              <canvas id="preview" width="512" height="512"></canvas>
-              <div class="empty-state" id="emptyState">
-                <div>
-                  <strong>写真を選択またはドロップしてください</strong>
-                  右のエリアへ画像を直接ドラッグ＆ドロップできます。
+            <div class="canvas-box">
+              <div class="guide-label h1-right">頭髪を考慮しない<br>想定される頭頂部</div>
+              <div class="guide-label h2-right">顎</div>
+              <div class="guide-label v1-bottom">耳付近</div>
+              <div class="guide-label v2-bottom">耳付近</div>
+              <div class="canvas-shell" id="canvasShell">
+                <canvas id="preview" width="512" height="512"></canvas>
+                <div class="empty-state" id="emptyState">
+                  <div>
+                    <strong>写真を選択またはドロップしてください</strong>
+                    右のエリアへ画像を直接ドラッグ＆ドロップできます。
+                  </div>
                 </div>
-              </div>
-              <div class="guide" id="guide" aria-hidden="true">
-                <span class="guide-line vertical v1"></span>
-                <span class="guide-line vertical v2"></span>
-                <span class="guide-line horizontal h1"></span>
-                <span class="guide-line horizontal h2"></span>
+                <div class="guide" id="guide" aria-hidden="true">
+                  <span class="guide-line vertical v1"></span>
+                  <span class="guide-line vertical v2"></span>
+                  <span class="guide-line horizontal h1"></span>
+                  <span class="guide-line horizontal h2"></span>
+                </div>
               </div>
             </div>
           </div>
