@@ -80,6 +80,11 @@
 
     .canvas-shell.dragging { cursor: grabbing; }
 
+    .canvas-shell.file-dragover {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 3px rgba(215, 17, 97, .12);
+    }
+
     canvas {
       display: block;
       width: 100%;
@@ -384,13 +389,12 @@
             <canvas id="preview" width="512" height="512"></canvas>
             <div class="empty-state" id="emptyState">
               <div>
-                <strong>写真を選択してください</strong>
-                画像を読み込むと、ここで位置と大きさを調整できます。
+                <strong>写真を選択またはドロップしてください</strong>
+                右のエリアへ画像を直接ドラッグ＆ドロップできます。
               </div>
             </div>
             <div class="guide" id="guide"></div>
           </div>
-          <p class="preview-note">ドラッグで位置調整できます。マウスホイール／ピンチ操作でも拡大縮小できます。</p>
         </div>
       </section>
 
@@ -635,10 +639,9 @@
         };
       }
 
-      fileInput.addEventListener('change', async () => {
-        const file = fileInput.files?.[0];
+      async function loadImageFile(file) {
         if (!file) return;
-        if (!file.type.startsWith('image/')) {
+        if (file.type && !file.type.startsWith('image/')) {
           setStatus('画像ファイルを選択してください。', true);
           return;
         }
@@ -663,6 +666,32 @@
         };
 
         nextImage.src = imageUrl;
+      }
+
+      fileInput.addEventListener('change', () => {
+        loadImageFile(fileInput.files?.[0]);
+      });
+
+      ['dragenter', 'dragover'].forEach(type => {
+        canvasShell.addEventListener(type, (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+          canvasShell.classList.add('file-dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(type => {
+        canvasShell.addEventListener(type, (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          canvasShell.classList.remove('file-dragover');
+        });
+      });
+
+      canvasShell.addEventListener('drop', (event) => {
+        const file = event.dataTransfer?.files?.[0];
+        loadImageFile(file);
       });
 
       zoom.addEventListener('input', () => setZoom(Number(zoom.value) / 100));
